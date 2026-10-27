@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teaching an AI System Where Not to Decide - Varun Abhishek C</title>
+<meta name="description" content="7 product decisions behind an enterprise AI dispute-resolution engine. A case study by Varun Abhishek C.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0F1419;--surface:#1A2332;--surface2:#1E2A3A;
+  --accent:#2DD4A8;--accent-dim:rgba(45,212,168,0.08);--accent-border:rgba(45,212,168,0.2);
+  --text:#E2E8F0;--text2:#94A3B8;--text3:#5C6B7A;
+  --border:rgba(255,255,255,0.06);--max-w:700px;
+}
+html{scroll-behavior:smooth;background:var(--bg);color:var(--text)}
+body{font-family:'Inter',system-ui,sans-serif;font-size:17px;line-height:1.7;background:var(--bg);text-align:justify}
+::selection{background:rgba(45,212,168,0.25);color:#fff}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--text3);border-radius:3px}
+
+/* Layout */
+.page{max-width:var(--max-w);margin:0 auto;padding:80px 24px 120px}
+@media(min-width:1100px){
+  .page{margin-left:calc(50% - 100px);padding-left:40px}
+}
+
+/* Side nav */
+.sidenav{display:none;position:fixed;left:24px;top:50%;transform:translateY(-50%);
+  width:220px;padding:16px 0}
+@media(min-width:1100px){.sidenav{display:block}}
+.sidenav-item{display:block;padding:6px 16px;font-size:13px;font-weight:500;
+  color:var(--text3);border-left:2px solid transparent;cursor:pointer;
+  transition:color 0.2s,border-color 0.2s;text-decoration:none;line-height:1.4;margin-bottom:2px}
+.sidenav-item:hover{color:var(--text2);text-decoration:none}
+.sidenav-item.active{color:var(--accent);border-left-color:var(--accent)}
+
+/* Hero */
+.hero{margin-bottom:64px}
+.hero-tag{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:0.3px;margin-bottom:16px}
+.hero h1{font-size:38px;font-weight:800;line-height:1.12;margin-bottom:20px;color:#fff}
+.hero-sub{font-size:18px;color:var(--text2);line-height:1.65;margin-bottom:24px}
+.hero-author{font-size:15px;color:var(--text3)}
+.hero-author strong{color:var(--text2);font-weight:600}
+.hero-divider{width:48px;height:3px;background:var(--accent);border-radius:2px;margin:32px 0}
+
+/* Glossary */
+.glossary-toggle{display:flex;align-items:center;gap:10px;cursor:pointer;
+  font-size:22px;font-weight:700;color:#fff;margin-bottom:16px;padding:12px 0;
+  border:none;background:none;width:100%;text-align:left}
+.glossary-toggle .arrow{font-size:14px;color:var(--accent);transition:transform 0.2s}
+.glossary-toggle .arrow.open{transform:rotate(90deg)}
+.glossary-body{overflow:hidden;transition:max-height 0.3s ease}
+.glossary-item{margin-bottom:14px}
+.glossary-term{font-weight:700;color:var(--text)}
+.glossary-def{color:var(--text2);font-size:15px;line-height:1.6}
+.glossary-section{margin-bottom:56px}
+
+/* Product section */
+.product-section{margin-bottom:64px}
+.section-title{font-size:26px;font-weight:700;color:#fff;margin-bottom:20px}
+.product-text{color:var(--text2);margin-bottom:16px}
+.product-label{font-weight:700;color:var(--text)}
+.product-stakes{color:var(--accent);font-weight:600;font-size:16px;margin-top:16px;line-height:1.6}
+
+/* Diagram container */
+.diagram-container{margin:32px 0;padding:24px;background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;overflow-x:auto}
+.diagram-container svg{width:100%;height:auto}
+
+/* Decision sections */
+.decision{margin-bottom:48px;border-bottom:1px solid var(--border);padding-bottom:48px}
+.decision:last-of-type{border-bottom:none}
+.decision-header{display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:8px 0;margin-bottom:4px}
+.decision-num{font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-dim);
+  border:1px solid var(--accent-border);width:28px;height:28px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:4px}
+.decision-title{font-size:24px;font-weight:700;color:#fff;line-height:1.25;flex:1}
+.decision-expand{font-size:18px;color:var(--accent);flex-shrink:0;margin-top:6px;
+  transition:transform 0.2s;width:20px;text-align:center}
+.decision-expand.open{transform:rotate(90deg)}
+
+.decision-body{overflow:hidden;transition:max-height 0.4s ease}
+.decision-body-inner{padding-top:16px}
+
+.d-label{font-size:13px;font-weight:700;color:var(--accent);letter-spacing:0.2px;margin-bottom:4px;margin-top:20px}
+.d-label:first-child{margin-top:0}
+.d-text{color:var(--text2);margin-bottom:0}
+
+.insight-box{background:var(--accent-dim);border-left:3px solid var(--accent);
+  border-radius:0 10px 10px 0;padding:16px 20px;margin-top:24px}
+.insight-label{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.4px;margin-bottom:4px}
+.insight-text{font-size:16px;color:var(--text);line-height:1.55;font-style:italic}
+
+/* Closing section */
+.closing{margin-top:64px;padding-top:48px;border-top:1px solid var(--border)}
+.closing h2{font-size:26px;font-weight:700;color:#fff;margin-bottom:20px}
+.closing p{color:var(--text2);margin-bottom:16px}
+
+/* Mobile */
+@media(max-width:600px){
+  .page{padding:48px 20px 80px}
+  .hero h1{font-size:28px}
+  .decision-title{font-size:20px}
+  .section-title{font-size:22px}
+  body{font-size:15px;text-align:left}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+const glossaryItems = [
+  { term: "Dispute", def: 'A customer formally contests an invoice they haven\'t paid yet. Example: "You charged me for 100 units, I only received 90 - I\'m not paying until this is fixed."' },
+  { term: "Deduction", def: "The customer has already short-paid: they deducted money from their payment themselves, and the system must validate whether that was justified. (Dispute = \"I won't pay yet\"; Deduction = \"I already paid less.\")" },
+  { term: "Credit note", def: "A document the company issues to officially reduce what a customer owes. Triggered when the system confirms the customer's claim is fully or partially valid." },
+  { term: "Chargeback", def: "The reverse: when a customer short-paid wrongly, the company raises a chargeback to recover the money. Triggered when the system confirms a deduction was invalid." },
+  { term: "Reason code", def: "The specific why behind a dispute, which determines the validation rule that applies. Examples: Unearned Discount, Pricing Error, Tax, Logistics Shortage, Promotional." },
+  { term: "Categorization", def: "The first step in the workflow: the system reads the incoming email and classifies which type of issue it is (e.g., Dispute - Pricing, Deduction - Tax), so it routes to the correct handler. The system handles 18 categories." },
+  { term: "Customer Agreement", def: "The signed, negotiated contract for a specific customer - the most authoritative source of agreed prices. Not always on file." },
+  { term: "Master price list", def: "The company's master reference table of agreed prices and discounts per product, used as the fallback benchmark when the Customer Agreement is missing." },
+  { term: "Dunning", def: "The process of sending customers escalating reminder emails to collect overdue payments - gentle first, then firmer, then a final demand." },
+  { term: "Human-in-the-Loop (HIL)", def: "The agent hits something it cannot safely decide, so it pauses and hands the ticket to a human to provide the missing information." },
+  { term: "Rework", def: 'The agent finished processing, but the analyst disagrees with the result and sends it back with a correction. (HIL = "agent got stuck, help it"; Rework = "agent finished, I disagree.")' },
+];
+
+const decisions = [
+  {
+    id: "d1", num: "1", title: "Decide where to automate, and where to calculate",
+    content: [
+      { label: "Problem", text: "The system resolves financial disputes worth tens of thousands of dollars per ticket. The amounts it produces directly trigger credit notes and chargebacks - real money moving between the company and the customer. Early on, there was pressure - from the product team and from my own team - to let the LLM compute these amounts. It would have been faster to build and demoed well. But a generative model can drift even at temperature zero, and in this system, one wrong number is not a cosmetic bug - it is a wrong credit note issued to the customer or a wrong chargeback raised in the financial system." },
+      { label: "Example", text: "A customer deducts $100,000 across two materials on an invoice, claiming a volume discount. The system needs to check each material against the agreed terms and compute exactly how much is valid (we owe them), how much is invalid (they owe us), and how much is undetermined. A single hallucinated unit price or transposed quantity from an LLM turns a $60,000 recovery into the wrong figure - and that figure becomes a chargeback raised in the financial system." },
+      { label: "Solution", text: "I drew a hard line through the architecture: deterministic Python calculators own every amount, and the LLM only writes the customer-facing explanation. I built six independent calculator strategies - one for each validated reason code (unearned discount, pricing error, tax, logistics with return, logistics without return, and promotional). Each runs the exact arithmetic per line item and produces three buckets: valid, invalid, and undetermined. The verdict itself (valid / invalid / partial / undetermined) is also derived deterministically from those buckets - the model never produces the verdict at all, so it cannot drift the outcome even by implication.\n\nIn that $100,000 case, the calculator checks each line against the agreed discount, computes valid $16,000 and invalid $60,000, and returns a partial-invalid verdict. The LLM's only job is to write a clear explanation to the customer. If the LLM fails, the worst case is an awkward sentence - not a wrong dollar figure.\n\nI built the decision logic by going back to the business requirements team repeatedly, challenging and refining their rules until they held up against edge cases. Reason codes with no encoded rule (Legal, Quality, Credit Terms) deliberately fall to a human rather than being guessed." },
+      { label: "Impact", text: "There is no path in the system where an LLM failure changes a dollar figure. Every amount is computed deterministically and is auditable line by line. The tradeoff is real: six strategies with priority ladders and edge-case guards are far more work to build and maintain than a single LLM call. I also proposed simplifying the amount model from four buckets to three - retiring a separate chargeback bucket - because the customer-facing totals were exceeding the original claim and confusing the interface. The downstream finance teams consume the validated amounts directly, so the handoff contract had to be precise - I wrote the stored-procedure change specs for the integration platform and defined exactly what data each team receives. I also made a deliberate call to recompute the verdict per line rather than trust the integration platform's rolled-up status, because the business rules on my side change faster than theirs can redeploy." },
+    ],
+    insight: "Set the automation boundary by blast radius - how much damage a single mistake causes - not by what the model is capable of. Let the AI generate language where a mistake costs a sentence; use deterministic code where a mistake costs a credit note."
+  },
+  {
+    id: "d2", num: "2", title: "Exhaust your own data before interrupting a human",
+    content: [
+      { label: "Problem", text: "For pricing disputes, the system needs two numbers: the agreed price (what we promised the customer) and the billed price (what actually appeared on the invoice). The agreed price is the benchmark - the number the customer's claim is judged against. But the signed Customer Agreement is not always on file. The tempting shortcut is to ask someone - but interrupting the pricing team costs a two-day turnaround, and asking the customer for the agreed number means asking them to supply the very figure they are being judged against." },
+      { label: "Example", text: "A customer disputes $100k on an invoice, saying they were overcharged for a material. The Customer Agreement for that material does not exist in the system. Without a fallback, the ticket either stalls for two days waiting on the pricing team, or the system pulls the \"agreed\" price from the customer's own email - letting them effectively grade their own homework." },
+      { label: "Solution", text: "I split the lookup into two parallel tracks. The benchmark (the agreed price) only ever comes from our own data: the Customer Agreement first, then the company's master price list - a reference table the client maintains in their database with agreed prices and discounts for every product under a contract. The customer never sets the number they are being judged against. The invoice-side values (billed amount, quantity) come from the email - that is appropriate because they describe what was actually charged, not what should have been. The pricing team is the last resort, not the first, and only for the benchmark side.\n\nIn that $100k case, the Customer Agreement is missing, but the master price list has the agreed rate on file - the system resolves it internally with zero human interruption. I also removed the Customer Agreement from the list of documents we ask the customer to provide - it is our own internal signed document, not the customer's homework.\n\nAlong the way I caught a genuine bug: discount rows and price rows in the master list were being pulled interchangeably - a list price could get compared against a discount - and I added a hard type constraint to stop it." },
+      { label: "Impact", text: "Fewer pricing team interruptions, no customer ever asked for an internal document, and a benchmark that is always sourced from our own data. The constraint I accepted: the pricing-availability check is all-or-nothing - if any material on a multi-material claim cannot be priced from our data, the system escalates the whole claim rather than partially validating. I worked with the business requirements team on how complete the master price list is, since their data coverage directly drives how often the system falls through to the pricing team." },
+    ],
+    insight: "The expensive operation is the human handoff. Never ask users for the evidence they are being judged against."
+  },
+  {
+    id: "d3", num: "3", title: "Build for the emails the system actually receives",
+    content: [
+      { label: "Problem", text: "The system was built assuming customers send dispute emails directly to the D&D mailbox. But disputes also surface during other workflows - a customer raises a dispute while the collections team is chasing a payment, or another internal team encounters one during their own interaction. When that happens, the internal team forwards the customer's email to D&D. The system was not built for this, and it broke in three ways I discovered one after another." },
+      { label: "Example", text: "A customer sends a $120,000 pricing dispute to the collections team during a payment follow-up. Collections forwards it to D&D. The system identifies the collections mailbox as the customer - attaching the ticket to the wrong company entirely. The customer's actual dispute details, including the $120,000 amount and invoice numbers sitting below the forward header, are thrown away. And when the full thread is read, older internal communication buried in it gets mistaken for new customer requests - creating child tickets for issues the customer never raised." },
+      { label: "Solution", text: "The first thing I fixed was the wrong customer identity. I built a parser that reads the bottom-most sender in the forwarded body - the original customer sits at the bottom of a forward chain, the forwarding team on top. I also tightened identity matching to strict exact-match only - the system refuses to guess, because a wrong customer is worse than no customer. An ambiguous case goes to a human rather than being silently misattributed.\n\nThe second problem I found was that the system was only reading the top portion of the email thread, so the customer's actual dispute details - the $120,000 amount, the invoice numbers - sitting below the forward header were being thrown away entirely. I built a rule that detects forwarded emails by subject line and skips the content trim, so the full body is preserved.\n\nBut fixing that revealed a third problem: when the system now read the full thread, it also picked up older internal communication buried deeper in the thread, and the categorizer mistook that for new customer requests. It would create additional child tickets for issues the customer never raised. I added a classification gate: when an email comes from an internal mailbox, the system is restricted to only classify dispute and deduction categories. It cannot act on unrelated communication in the thread, so tickets for issues the customer never raised cannot be created.\n\nI first explored fixing the forwarding problem upstream with the integration platform team, but they cannot access or parse the email bodies - those live in a separate document store - so I built all three fixes where the data actually was." },
+      { label: "Impact", text: "Forwarded disputes now attach to the correct customer, preserve the full dispute content, and classify only the real issue - or fall to a human if identity cannot be confirmed. The known limitation: the parser handles English email headers only. Other languages use different keywords. I treat that as a known roadmap item rather than pretending it is solved." },
+    ],
+    insight: "Design for real-world behavior, not the one you designed for. Refuse to guess when a wrong identity is the cost."
+  },
+  {
+    id: "d4", num: "4", title: "A working automation can still damage customer trust",
+    content: [
+      { label: "Problem", text: "While testing the collections workflow, I identified that certain reminder emails were being sent inappropriately. The system was sending firm, escalated messages to customers who had already paid. Collection reminders escalate as an invoice stays unpaid - a gentle first reminder, then progressively firmer follow-ups. But the system determined the tone based on the customer's past history, not their current situation. A customer who had fully cleared their overdue invoices and now carried only fresh ones was still receiving aggressive correspondence - as if they remained delinquent." },
+      { label: "Example", text: "A customer has three overdue invoices that have been followed up three times - the account is at a firm, escalated tone. The customer pays off all three. Next month they have two brand-new invoices. Without the fix, those new invoices receive the same escalated reminder - a customer who just cleared their debt is treated as though they still owe." },
+      { label: "Solution", text: "I built a payment-aware reset. The system checks whether all of a customer's open invoices are new - meaning the old debt has been cleared. If yes, the reminder sequence resets to the first, gentlest step. If new invoices sit alongside genuinely old unpaid debt, the system deliberately does not reset - new invoices should not soften the pressure on outstanding debt.\n\nIn the example above, all open invoices are new, so the system resets to a gentle first reminder. But if the customer had paid only two of the three and still owed on one old invoice, the system stays at the firm tone - the new invoices do not change that.\n\nI layered a set of pre-outreach checks that prevent the system from contacting a customer who has already committed to pay, has a pending dispute, carries a credit balance, or was contacted too recently.\n\nOne alternative I considered was a simple account-level flag - \"has this customer paid: yes or no.\" I rejected it because it cannot distinguish new invoices from a customer who just cleared their debt versus old invoices a customer has never paid. Instead, I tracked a follow-up counter per invoice: a counter of zero means the invoice is new and has never been chased. That granularity is what lets the reset logic tell the two situations apart.\n\nI also moved the business rules into client configuration after realizing during demos that I was editing code every time a threshold changed." },
+      { label: "Impact", text: "Prevented escalated reminders from reaching customers who had already paid, and gave the operations team a way to tune collection aggressiveness per client through configuration without a code deploy. The tradeoff I accepted: the reset is all-or-nothing at the customer level - one genuinely old invoice keeps the whole account at the firm tone. A per-invoice tone track is the refinement I would build next." },
+    ],
+    insight: "A working automation that harms a customer relationship is a severity issue, not a logic bug."
+  },
+  {
+    id: "d5", num: "5", title: "Make the agent inspectable",
+    content: [
+      { label: "Problem", text: "As I built the workflow, I kept encountering the same challenge: I could not easily determine what the agent had done or why it reached a particular conclusion. If I - the person who built it - could not inspect its reasoning, the analyst who would eventually supervise it would not trust it either. An agent that resolves financial disputes behind an opaque box is an agent that analysts will quietly redo by hand, which defeats the entire purpose of the automation." },
+      { label: "Example", text: "The system validates a $100k dispute and determines that $70,000 is valid and $30,000 is invalid. The analyst sees the verdict but has no way to understand why - which line items were valid, what prices were compared, what rule was applied. Without visibility into the reasoning, the analyst either blindly approves (risky) or redoes the validation manually (defeating the automation)." },
+      { label: "Solution", text: "I proposed what we called agentic huddles: every meaningful agent step emits an analyst-readable, first-person narration - for instance, \"I have retrieved the configured validation rules applicable to the reason code… The outcome is Partial Invalid, with valid amount $50,000 and invalid amount $25,000 across 3 line items\" - typed by outcome (success, failed, on-hold) and rendered as a timeline in the interface. Behind the validation step I built a reasoning tooltip: the deterministic calculator produces the per-line numbers and reasons, the LLM narrates them in plain language, and a compact snapshot is persisted. When the analyst hovers over a validation result, they see exactly which materials were checked, what amounts were compared, and why each line was ruled valid or invalid.\n\nThat persisted snapshot also serves a practical purpose - when a ticket pauses for human approval and resumes later, the interface loads the original draft directly from it rather than calling the LLM again to regenerate it. I made the content dynamic, injecting real materials and amounts rather than a generic \"validation complete.\" In terms of ownership, I determined what data points to surface; the business requirements team refined the analyst-facing wording; the application team rendered the timeline and tooltips.\n\nThe observability layer is designed so that if a huddle entry fails to write, the agent's actual work continues unblocked - transparency supports the transaction but never gates it." },
+      { label: "Impact", text: "Converted a black-box agent into a reviewable one - a single surface that serves analyst trust, tester verification, and demo transparency simultaneously. The quality assurance team also adopted it as a verification tool: they could confirm which path a ticket took directly from the interface without reading code." },
+    ],
+    insight: "Analysts won't adopt what they can't inspect. Trust built through transparency is what turns raw automation into usable automation."
+  },
+  {
+    id: "d6", num: "6", title: "One email. Three issues. One reply",
+    content: [
+      { label: "Problem", text: "Real customer emails are rarely clean. One email frequently raises several distinct issues at once - a pricing dispute, a payment commitment, and a document request - each requiring a different owner, priority, and resolution timeline. Treating a multi-issue email as a single ticket means some issues get the wrong owner or miss their resolution deadline. But treating it as several fully separate conversations means the customer receives three disjointed replies to one email." },
+      { label: "Example", text: "A customer writes: \"I'm disputing the price on invoice INV-5501 - we were charged $45,000 more than our agreed rate. Separately, I'll pay invoice INV-5502 ($30,000) by end of this month. Also, can you send me a copy of our Statement of Account?\" That is three distinct issues in one email: a pricing dispute, a payment commitment, and a document request - each needing a different team and workflow." },
+      { label: "Solution", text: "We designed the multi-category split around a simple principle: the unit of work is one issue, but the unit of communication is one conversation. Each issue becomes a real child ticket with its own internal owner, priority, and resolution timeline, while the customer receives a single consolidated reply. In the example above, three child tickets are created: the pricing dispute routes to the D&D workflow, the payment commitment and document request route to their respective handlers. The parent ticket's priority is automatically set to match the most urgent child.\n\nSeveral design choices protect correctness. No grandchildren - a child ticket can never split again, preventing recursion. Attachments are copied to children, not moved, so the parent retains the complete record. Sentiment is computed once on the parent and inherited by all children for cost and consistency. When a child involves a dispute, a specific hand-off sentence is injected into the consolidated reply - \"The dispute in your email will be handled by our dedicated team, who will contact you shortly.\" This sentence is stored as a fixed constant rather than generated by the LLM, because it is a promise to the customer about what happens next - not content where variation is acceptable. If a child ticket fails to create, the system escalates to a human with full context rather than silently dropping part of the customer's request.\n\nI proposed the architecture in design calls and shipped the child-ticket correctness fixes. One dealt with a privacy control that masks invoice numbers: when the identifiers are hidden, a naive match collapses distinct issues onto one child and drops the rest. I built a fallback cascade - match by invoice number, then by disputed amount, then by the child's own text - so distinct issues stay distinct even when identifiers are masked. I also built the logic that assigns the right supporting documents to each child, matching invoice numbers against the parent's attachments." },
+      { label: "Impact", text: "A single multi-issue email now splits into correctly-owned child tickets while the customer receives one coherent reply - no part of the request is ever silently dropped. The tradeoff: ensuring correct splits requires significant edge-case handling - duplicate guards to prevent the same issue becoming two children, the masking cascade, the recursion guard, and failure escalation to a human. Over-splitting and under-splitting are distinct failure modes, and each required its own defense." },
+    ],
+    insight: "Separate for internal accountability, unified for the customer experience, and serve both sides deliberately."
+  },
+  {
+    id: "d7", num: "7", title: "Two identical actions, two different products",
+    content: [
+      { label: "Problem", text: "A human can interact with a ticket for two opposite reasons: the agent got stuck and needs a human to provide the missing piece (Human-in-the-Loop), or the agent finished and the analyst disagrees with the result and sends it back with a correction (Rework). Both actions arrived from the integration platform as the same callback - the integration platform team flagged the misrouting, and the system could not tell them apart. This caused reworks to fall into the HIL path. And on a rework, the agent would re-read the original email and overwrite the analyst's correction with the old data - silently destroying a human's work." },
+      { label: "Example", text: "The agent processes a dispute and records the amount as $80,000 from the email. The analyst reviews it, determines the correct amount is $65,000, updates it in the interface, and triggers a rework. If the system treats this like an HIL resume, it re-reads the original email and overwrites $65,000 back to $80,000 - the analyst's correction is silently destroyed, and a wrong credit note is issued." },
+      { label: "Solution", text: "I identified the reliable field that cleanly separates the two events - the event type - and validated the choice with my team lead. The key design decision was making the agent behave differently depending on intent. On a rework, the agent skips re-reading the original email entirely and picks up the analyst's updated values from the database - the corrected amount, the changed reason code, whatever they modified. The analyst's saved correction is the single source of truth. If a rework fires but the updated values are not found in the database, the system raises an error rather than silently running on old data. On an HIL resume, the agent simply continues from where it got stuck - the human provided the missing piece, and the agent proceeds normally.\n\nThe alternative - a single handler treating both events the same way - conflated two intents with opposite definitions of success, and the analyst's work could be silently overwritten." },
+      { label: "Impact", text: "Reworks and HIL resumes now route correctly, and an analyst's correction can no longer be silently overwritten by the agent re-reading the original email." },
+    ],
+    insight: "When two actions look identical but mean opposite things, treat them as two different products. Know when to fail gracefully versus fail loudly."
+  },
+];
+
+function Glossary() {
+  const [open, setOpen] = useState(false);
+  return React.createElement("div", { className: "glossary-section" },
+    React.createElement("button", { className: "glossary-toggle", onClick: () => setOpen(!open) },
+      React.createElement("span", { className: `arrow ${open ? "open" : ""}` }, "\u25B6"),
+      "Glossary"
+    ),
+    React.createElement("div", { className: "glossary-body", style: { maxHeight: open ? "2000px" : "0", overflow: "hidden" } },
+      glossaryItems.map((g, i) =>
+        React.createElement("div", { key: i, className: "glossary-item" },
+          React.createElement("span", { className: "glossary-term" }, g.term),
+          " - ",
+          React.createElement("span", { className: "glossary-def" }, g.def)
+        )
+      )
+    )
+  );
+}
+
+function Decision({ d, isOpen, onToggle }) {
+  const bodyRef = useRef(null);
+  const [height, setHeight] = useState(0);
+  useEffect(() => {
+    if (bodyRef.current) setHeight(bodyRef.current.scrollHeight);
+  }, [isOpen]);
+
+  return React.createElement("div", { className: "decision", id: d.id },
+    React.createElement("div", { className: "decision-header", onClick: onToggle },
+      React.createElement("div", { className: "decision-num" }, d.num),
+      React.createElement("div", { className: "decision-title" }, d.title),
+      React.createElement("div", { className: `decision-expand ${isOpen ? "open" : ""}` }, "\u25B6")
+    ),
+    React.createElement("div", { className: "decision-body", style: { maxHeight: isOpen ? height + "px" : "0", overflow: "hidden" } },
+      React.createElement("div", { ref: bodyRef, className: "decision-body-inner" },
+        d.content.map((c, i) =>
+          React.createElement(React.Fragment, { key: i },
+            React.createElement("div", { className: "d-label" }, c.label),
+            c.text.split("\n\n").map((p, j) =>
+              React.createElement("p", { key: j, className: "d-text", style: { marginBottom: j < c.text.split("\n\n").length - 1 ? "12px" : "0" } }, p)
+            )
+          )
+        ),
+        React.createElement("div", { className: "insight-box" },
+          React.createElement("div", { className: "insight-label" }, "PM INSIGHT"),
+          React.createElement("div", { className: "insight-text" }, d.insight)
+        )
+      )
+    )
+  );
+}
+
+function SideNav({ activeId }) {
+  return React.createElement("nav", { className: "sidenav" },
+    React.createElement("a", { href: "#top", className: `sidenav-item ${!activeId ? "active" : ""}` }, "The product"),
+    decisions.map(d =>
+      React.createElement("a", {
+        key: d.id, href: `#${d.id}`,
+        className: `sidenav-item ${activeId === d.id ? "active" : ""}`
+      }, `${d.num}. ${d.title}`)
+    ),
+    React.createElement("a", { href: "#closing", className: `sidenav-item ${activeId === "closing" ? "active" : ""}` }, "What I learned")
+  );
+}
+
+function App() {
+  const [openDecisions, setOpenDecisions] = useState({});
+  const [activeId, setActiveId] = useState(null);
+
+  const toggleDecision = useCallback((id) => {
+    setOpenDecisions(prev => ({ ...prev, [id]: !prev[id] }));
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) setActiveId(entry.target.id);
+      });
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    decisions.forEach(d => {
+      const el = document.getElementById(d.id);
+      if (el) observer.observe(el);
+    });
+    const closing = document.getElementById("closing");
+    if (closing) observer.observe(closing);
+    return () => observer.disconnect();
+  }, []);
+
+  return React.createElement(React.Fragment, null,
+    React.createElement(SideNav, { activeId }),
+    React.createElement("div", { className: "page" },
+      // Hero
+      React.createElement("div", { className: "hero", id: "top" },
+        React.createElement("div", { className: "hero-tag" }, "AI PRODUCT CASE STUDY"),
+        React.createElement("h1", null, "Teaching an AI System Where ", React.createElement("span", { style: { color: "var(--accent)" } }, "Not"), " to Decide"),
+        React.createElement("div", { className: "hero-divider" }),
+        React.createElement("p", { className: "hero-sub" }, "I was the primary architect of the Disputes & Deductions (D&D) workflow inside SynOps O2C 2.0 - an agentic AI platform that automates Order-to-Cash processes for a large enterprise finance-and-accounting client. This is the story of the product decisions I made while building it."),
+        React.createElement("p", { className: "hero-sub", style: { fontSize: "16px" } }, "The one thread running through every decision below is the same question, asked seven different ways: where should the system decide on its own, where must deterministic code own the outcome, and where does a human have to stay in the loop? In a system that moves real money, that boundary is the product. But the question shows up in forms beyond just \"AI vs. code vs. human\" - it is also about when the system should refuse to guess, when a \"working\" automation is quietly damaging a relationship, and when transparency is the difference between adoption and rejection."),
+        React.createElement("div", { className: "hero-author" },
+          React.createElement("strong", null, "Varun Abhishek C"),
+          React.createElement("br"),
+          "AI Engineer, 2 years shipping agentic systems"
+        )
+      ),
+
+      // Glossary
+      React.createElement(Glossary),
+
+      // Product
+      React.createElement("div", { className: "product-section" },
+        React.createElement("h2", { className: "section-title" }, "The product"),
+        React.createElement("p", { className: "product-text" }, "When a customer disputes an invoice or takes a deduction, they send an email: \"you charged me for 100 units, I only received 90,\" or \"I'm taking the 2% discount you promised.\" Before this system, an analyst handled that email end to end by hand - classifying it, identifying why the customer was disputing, gathering the supporting documents, validating it against the business rules, computing the amount owed, chasing the approval, drafting the customer reply, notifying the relevant internal teams, and recording the outcome."),
+        React.createElement("p", { className: "product-text" }, "The D&D workflow I built performs that entire journey as one orchestrated agent, and falls back to a human whenever it cannot safely decide. It classifies the email into one of 18 dispute and deduction categories, extracts the details, validates against the business rules, computes the amounts, drafts the customer-facing reply, routes it through a multi-tier approval chain, and hands the financial outcome to the right internal team - one team issues credit notes, another recovers money the customer wrongly deducted."),
+        React.createElement("p", { className: "product-text" }, React.createElement("span", { className: "product-label" }, "The users: "), "Analysts who supervise and approve the agent's work; team leads and approvers who sign off on the amounts; the downstream finance teams who act on them; and the customers who receive the final reply."),
+        React.createElement("p", { className: "product-text" }, React.createElement("span", { className: "product-label" }, "The stakes: "), "real money. The amounts the system produces trigger credit notes and chargebacks. A wrong number is not a cosmetic bug - it is a wrong credit note issued to a customer, a financial action taken on bad data, and an error an auditor can flag. That reality shaped the defining decision.")      
+      ),
+
+            // Diagram
+              React.createElement("div", { className: "diagram-container" },
+                React.createElement("div", { dangerouslySetInnerHTML: { __html: `
+        <svg viewBox="0 0 680 880" xmlns="http://www.w3.org/2000/svg" style="font-family:Inter,system-ui,sans-serif">
+        <style>
+          .db{fill:#1E2A3A;stroke:rgba(255,255,255,0.1);stroke-width:1}
+          .db-accent{fill:#1A3333;stroke:rgba(45,212,168,0.3);stroke-width:1}
+          .db-amber{fill:rgba(245,158,11,0.1);stroke:rgba(245,158,11,0.25);stroke-width:1}
+          .db-coral{fill:rgba(244,63,94,0.08);stroke:rgba(244,63,94,0.2);stroke-width:1}
+          .th{fill:#E2E8F0;font-size:14px;font-weight:700}
+          .ts{fill:#94A3B8;font-size:11px;font-weight:500}
+          .ta{fill:#2DD4A8;font-size:11px;font-weight:600}
+          .arr{stroke:#2DD4A8;stroke-width:1.5}
+          .dash{stroke:#94A3B8;stroke-width:1;stroke-dasharray:4 3}
+          .lead{stroke:#94A3B8;stroke-width:1}
+        </style>
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#2DD4A8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+        <rect class="db-coral" x="230" y="40" width="220" height="52" rx="8"/>
+        <text class="th" x="340" y="60" text-anchor="middle">Customer dispute email</text>
+        <text class="ts" x="340" y="76" text-anchor="middle">Including forwarded emails</text>
+
+        <line x1="340" y1="92" x2="340" y2="135" class="arr" marker-end="url(#ah)"/>
+
+        <rect class="db" x="215" y="135" width="250" height="52" rx="8"/>
+        <text class="th" x="340" y="155" text-anchor="middle">Categorize (18 categories)</text>
+        <text class="ts" x="340" y="171" text-anchor="middle">LLM identifies email type</text>
+
+        <line class="lead" x1="465" y1="161" x2="530" y2="161"/>
+        <text class="ta" x="536" y="155">D3: Forwarded email</text>
+        <text class="ts" x="536" y="169">identity + content fix</text>
+
+        <line x1="340" y1="187" x2="340" y2="232" class="arr" marker-end="url(#ah)"/>
+
+        <line x1="340" y1="208" x2="110" y2="208" class="dash"/>
+        <line x1="110" y1="208" x2="110" y2="275" class="arr" marker-end="url(#ah)"/>
+        <rect class="db-accent" x="35" y="275" width="150" height="44" rx="8"/>
+        <text class="th" x="110" y="300" text-anchor="middle">Multi-category</text>
+        <line class="lead" x1="185" y1="297" x2="200" y2="297"/>
+        <text class="ta" x="206" y="300">D6: Child tickets</text>
+
+        <rect class="db" x="230" y="232" width="220" height="52" rx="8"/>
+        <text class="th" x="340" y="252" text-anchor="middle">Extract details</text>
+        <text class="ts" x="340" y="268" text-anchor="middle">Invoices, amounts, context</text>
+
+        <line x1="340" y1="284" x2="340" y2="345" class="arr" marker-end="url(#ah)"/>
+
+        <rect class="db-accent" x="200" y="345" width="280" height="68" rx="8"/>
+        <text class="th" x="340" y="367" text-anchor="middle">Validate + compute amounts</text>
+        <text class="ts" x="340" y="385" text-anchor="middle">Deterministic calculators only</text>
+        <text class="ts" x="340" y="401" text-anchor="middle">LLM never touches the money</text>
+
+        <line class="lead" x1="200" y1="365" x2="170" y2="355"/>
+        <text class="ta" x="164" y="349" text-anchor="end">D1: Automation boundary</text>
+        <text class="ts" x="164" y="365" text-anchor="end">Code owns amounts</text>
+        <line class="lead" x1="200" y1="395" x2="170" y2="395"/>
+        <text class="ta" x="164" y="389" text-anchor="end">D2: Pricing fallback</text>
+        <text class="ts" x="164" y="405" text-anchor="end">Our data first</text>
+
+        <line x1="340" y1="413" x2="340" y2="475" class="arr" marker-end="url(#ah)"/>
+
+        <line x1="480" y1="413" x2="560" y2="413" class="dash"/>
+        <line x1="560" y1="413" x2="560" y2="480" class="arr" marker-end="url(#ah)"/>
+        <rect class="db-amber" x="500" y="480" width="120" height="44" rx="8"/>
+        <text class="th" x="560" y="505" text-anchor="middle">Human</text>
+        <line class="lead" x1="560" y1="524" x2="560" y2="545"/>
+        <text class="ta" x="560" y="560" text-anchor="middle">D7: HIL vs rework</text>
+
+        <rect class="db" x="230" y="475" width="220" height="44" rx="8"/>
+        <text class="th" x="340" y="500" text-anchor="middle">Agentic huddles</text>
+        <line class="lead" x1="230" y1="497" x2="170" y2="497"/>
+        <text class="ta" x="164" y="491" text-anchor="end">D5: Transparency</text>
+        <text class="ts" x="164" y="507" text-anchor="end">Inspectable reasoning</text>
+
+        <line x1="340" y1="519" x2="340" y2="570" class="arr" marker-end="url(#ah)"/>
+
+        <rect class="db" x="230" y="570" width="220" height="52" rx="8"/>
+        <text class="th" x="340" y="590" text-anchor="middle">Draft customer reply</text>
+        <text class="ts" x="340" y="606" text-anchor="middle">LLM drafts response</text>
+
+        <line x1="340" y1="622" x2="340" y2="665" class="arr" marker-end="url(#ah)"/>
+
+        <rect class="db-accent" x="230" y="665" width="220" height="52" rx="8"/>
+        <text class="th" x="340" y="685" text-anchor="middle">Approval chain</text>
+        <text class="ts" x="340" y="701" text-anchor="middle">TL → L1 → L2</text>
+
+        <line x1="280" y1="717" x2="190" y2="760" class="arr" marker-end="url(#ah)"/>
+        <line x1="340" y1="717" x2="340" y2="760" class="arr" marker-end="url(#ah)"/>
+        <line x1="400" y1="717" x2="490" y2="760" class="arr" marker-end="url(#ah)"/>
+
+        <rect class="db" x="120" y="760" width="140" height="52" rx="8"/>
+        <text class="th" x="190" y="780" text-anchor="middle">Credit notes</text>
+        <text class="ts" x="190" y="796" text-anchor="middle">Finance team</text>
+
+        <rect class="db" x="270" y="760" width="140" height="52" rx="8"/>
+        <text class="th" x="340" y="780" text-anchor="middle">Chargebacks</text>
+        <text class="ts" x="340" y="796" text-anchor="middle">Recovery team</text>
+
+        <rect class="db" x="420" y="760" width="140" height="52" rx="8"/>
+        <text class="th" x="490" y="780" text-anchor="middle">Customer</text>
+        <text class="ts" x="490" y="796" text-anchor="middle">Resolution email</text>
+
+        <rect x="180" y="835" width="320" height="36" rx="8" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="4 3"/>
+        <text class="ts" x="340" y="857" text-anchor="middle">D4: Payment-aware dunning reset (Collections side)</text>
+        </svg>
+                ` } })
+              ),
+
+      // Decisions
+      decisions.map(d =>
+        React.createElement(Decision, {
+          key: d.id, d, isOpen: !!openDecisions[d.id],
+          onToggle: () => toggleDecision(d.id)
+        })
+      ),
+
+      // Closing
+      React.createElement("div", { className: "closing", id: "closing" },
+        React.createElement("h2", null, "What I learned, and what I'd do differently"),
+        React.createElement("p", null, "Looking back across all seven decisions, the hardest and most valuable calls were not about what the AI could do - they were about where it should not act. The automation boundary around the money, the refusal to guess a customer's identity, the refusal to overwrite an analyst's correction. The product judgment lived in the restraint, not the capability."),
+        React.createElement("p", null, "The patterns I would carry into any future AI product: set automation boundaries by how much damage a mistake causes; exhaust internal data before interrupting a human; design for real-world input paths, not ideal ones; make the system inspectable so people will trust it; and refuse to guess when the cost of being wrong is high."),
+        React.createElement("p", null, "What I would harden next: extend the forwarded-email parser to handle multiple languages. Add a per-invoice tone track to the dunning reset instead of the all-or-nothing account-level approach. And instrument the huddle and tooltip chain as an evaluation surface - because every decision and its reasoning is already captured per ticket, it is the natural foundation for monitoring the agent's accuracy over time.")
+      )
+    )
+  );
+}
+
+ReactDOM.render(React.createElement(App), document.getElementById("root"));
+</script>
+</body>
+</html>
